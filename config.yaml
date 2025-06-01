@@ -1,6 +1,6 @@
 # API Configuration для OpenRouter
 openrouter:
-  api_key: "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"
+  api_key: ""  # Будет загружен из secrets.toml или переменных окружения
   base_url: "https://openrouter.ai/api/v1"
   model: "deepseek/deepseek-r1-0528:free"
   temperature: 0.7
@@ -25,7 +25,7 @@ vector_store:
 assistant:
   max_context_length: 10
   session_timeout_hours: 24
-  max_response_tokens: 1000
+  max_response_tokens: 2000
   language: "russian"
 
 # Web Interface
@@ -33,4 +33,3 @@ web:
   host: "0.0.0.0"
   port: 8501
   title: "LAI - ИИ-ассистент для сотрудников"
-

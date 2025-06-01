@@ -3,12 +3,13 @@ import os
 import logging
 from pathlib import Path
 from typing import Dict, Any, Optional
+import streamlit as st
 
 logger = logging.getLogger(__name__)
 
 
 class ConfigManager:
-    """Менеджер конфигурации с проверкой настроек"""
+    """Менеджер конфигурации с проверкой настроек и поддержкой secrets"""
 
     def __init__(self, config_path: str = "config.yaml"):
         self.config_path = Path(config_path)
@@ -25,20 +26,50 @@ class ConfigManager:
             with open(self.config_path, 'r', encoding='utf-8') as f:
                 config = yaml.safe_load(f)
 
+            # Загружаем секреты из Streamlit secrets или переменных окружения
+            self._load_secrets(config)
+
             logger.info(f"Конфигурация загружена из {self.config_path}")
             return config
 
         except Exception as e:
             logger.warning(f"Ошибка при загрузке конфигурации: {e}, используем настройки по умолчанию")
-            return self._get_default_config()
+            config = self._get_default_config()
+            self._load_secrets(config)
+            return config
+
+    def _load_secrets(self, config: Dict[str, Any]) -> None:
+        """Загрузка секретов из Streamlit secrets или переменных окружения"""
+        try:
+            # Пытаемся загрузить из Streamlit secrets
+            if hasattr(st, 'secrets'):
+                try:
+                    api_key = st.secrets.get("OPENROUTER_API_KEY")
+                    if api_key:
+                        config["openrouter"]["api_key"] = api_key
+                        logger.info("API ключ загружен из Streamlit secrets")
+                        return
+                except:
+                    pass
+
+            # Пытаемся загрузить из переменных окружения
+            api_key = os.getenv("OPENROUTER_API_KEY")
+            if api_key:
+                config["openrouter"]["api_key"] = api_key
+                logger.info("API ключ загружен из переменных окружения")
+            else:
+                logger.warning("API ключ не найден ни в secrets, ни в переменных окружения")
+
+        except Exception as e:
+            logger.error(f"Ошибка при загрузке секретов: {e}")
 
     def _get_default_config(self) -> Dict[str, Any]:
         """Получение конфигурации по умолчанию"""
         return {
             "openrouter": {
-                "api_key": "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",
+                "api_key": "",  # Будет загружен из secrets или переменных окружения
                 "base_url": "https://openrouter.ai/api/v1",
-                "model": "deepseek/deepseek-r1-0528-qwen3-8b:free",
+                "model": "deepseek/deepseek-r1-0528:free",
                 "temperature": 0.7
             },
             "embeddings": {
@@ -63,7 +94,6 @@ class ConfigManager:
     def _validate_config(self) -> None:
         """Валидация конфигурации"""
         required_sections = ["openrouter", "embeddings", "vector_store"]
-
         for section in required_sections:
             if section not in self.config:
                 logger.error(f"Отсутствует обязательная секция конфигурации: {section}")
