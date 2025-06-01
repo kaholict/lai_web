@@ -41,24 +41,30 @@ class ConfigManager:
     def _load_secrets(self, config: Dict[str, Any]) -> None:
         """Загрузка секретов из Streamlit secrets или переменных окружения"""
         try:
+            api_key = None
+
             # Пытаемся загрузить из Streamlit secrets
-            if hasattr(st, 'secrets'):
-                try:
+            try:
+                if hasattr(st, 'secrets') and st.secrets:
                     api_key = st.secrets.get("OPENROUTER_API_KEY")
                     if api_key:
-                        config["openrouter"]["api_key"] = api_key
                         logger.info("API ключ загружен из Streamlit secrets")
-                        return
-                except:
-                    pass
+            except Exception as e:
+                logger.debug(f"Не удалось загрузить из Streamlit secrets: {e}")
 
-            # Пытаемся загрузить из переменных окружения
-            api_key = os.getenv("OPENROUTER_API_KEY")
+            # Если не найден в secrets, пытаемся загрузить из переменных окружения
+            if not api_key:
+                api_key = os.getenv("OPENROUTER_API_KEY")
+                if api_key:
+                    logger.info("API ключ загружен из переменных окружения")
+
+            # Устанавливаем API ключ в конфигурацию
             if api_key:
                 config["openrouter"]["api_key"] = api_key
-                logger.info("API ключ загружен из переменных окружения")
             else:
                 logger.warning("API ключ не найден ни в secrets, ни в переменных окружения")
+                # Не используем хардкоженный ключ из config.yaml для безопасности
+                config["openrouter"]["api_key"] = ""
 
         except Exception as e:
             logger.error(f"Ошибка при загрузке секретов: {e}")
@@ -103,9 +109,10 @@ class ConfigManager:
         api_key = self.config["openrouter"]["api_key"]
         if not api_key:
             logger.error("API ключ OpenRouter не задан")
-            raise ValueError("API ключ OpenRouter не найден в конфигурации")
+            raise ValueError(
+                "API ключ OpenRouter не найден. Установите переменную окружения OPENROUTER_API_KEY или добавьте ключ в secrets.toml")
         elif not api_key.startswith("sk-or-"):
-            logger.warning("API ключ может быть некорректным (не начинается с 'sk-or-')")
+            logger.warning(f"API ключ может быть некорректным (не начинается с 'sk-or-'): {api_key[:10]}...")
 
         # Создание директорий
         self._ensure_directories()

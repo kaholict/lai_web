@@ -19,30 +19,32 @@ class AIAssistant:
         self.config = config
         self.context_manager = ContextManager()
 
-        # Настройка OpenRouter API с улучшенной обработкой ошибок
         try:
+            # Проверяем наличие API ключа
             api_key = config["openrouter"]["api_key"]
-            if not api_key or api_key.strip() == "":
-                raise ValueError("API ключ OpenRouter не задан или пуст")
+            if not api_key:
+                raise ValueError("API ключ OpenRouter не найден в конфигурации")
 
+            # Настройка OpenRouter API с улучшенными параметрами
             self.client = openai.OpenAI(
                 base_url=config["openrouter"]["base_url"],
                 api_key=api_key,
-                timeout=60.0,  # Увеличиваем таймаут
-                max_retries=3  # Добавляем повторные попытки
+                timeout=60.0,  # Увеличенный таймаут
+                max_retries=3  # Количество повторных попыток
             )
+
             self.model = config["openrouter"]["model"]
             self.temperature = config["openrouter"]["temperature"]
 
-            # Проверка подключения
-            self._test_connection()
+            logger.info(f"AI Assistant инициализирован с моделью: {self.model}")
 
         except Exception as e:
-            logger.error(f"Ошибка инициализации OpenRouter API: {e}")
+            logger.error(f"Ошибка инициализации AI Assistant: {e}")
             raise
 
         # Системный промпт для ассистента
         self.system_prompt = """Ты — профессиональный ИИ-ассистент для сотрудников отдела продаж.
+
 Твоя основная задача — помогать менеджерам по продажам, используя корпоративную документацию.
 
 Принципы работы:
@@ -52,26 +54,11 @@ class AIAssistant:
 4. Если вопрос не относится к работе менеджера по продажам, вежливо укажи это
 5. Приводи конкретные выдержки из документов в ответах
 6. Помни контекст разговора и ссылайся на предыдущие сообщения при необходимости
-7. НИКОГДА не упоминай название компании и продукта для соблюдения конфиденциальности, кроме компании LAI, создавшей тебя
+7. НИКОГДА не упоминай название компании и продукта для соблюдения конфиденциальности
 
 Если вопрос не связан с продажами, ответь на него, но добавь:
 "Обратите внимание, что этот вопрос не относится к вашей основной рабочей деятельности в отделе продаж."
 """
-
-    def _test_connection(self):
-        """Тестирование подключения к OpenRouter API"""
-        try:
-            # Простой тестовый запрос
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[{"role": "user", "content": "Тест"}],
-                max_tokens=10,
-                temperature=0.1
-            )
-            logger.info("Подключение к OpenRouter API успешно установлено")
-        except Exception as e:
-            logger.error(f"Ошибка тестирования подключения к OpenRouter API: {e}")
-            raise
 
     def format_documents_with_sources(self, docs: List[Document]) -> Tuple[str, List[str]]:
         """Форматирование документов с указанием источников"""
@@ -101,11 +88,11 @@ class AIAssistant:
         query_lower = query.lower()
         return any(keyword in query_lower for keyword in sales_keywords)
 
-    def _make_api_request(self, messages: List[Dict[str, str]], max_retries: int = 3) -> str:
-        """Выполнение API запроса с повторными попытками и обработкой ошибок"""
+    def make_api_request_with_retry(self, messages: List[Dict], max_retries: int = 3) -> Optional[str]:
+        """Выполнение API запроса с повторными попытками"""
         for attempt in range(max_retries):
             try:
-                logger.info(f"Попытка API запроса {attempt + 1}/{max_retries}")
+                logger.info(f"Попытка {attempt + 1} отправки запроса к OpenRouter API")
 
                 response = self.client.chat.completions.create(
                     model=self.model,
@@ -115,39 +102,51 @@ class AIAssistant:
                     timeout=60.0
                 )
 
+                logger.info("Успешно получен ответ от OpenRouter API")
                 return response.choices[0].message.content
 
+            except openai.AuthenticationError as e:
+                logger.error(f"Ошибка аутентификации OpenRouter API: {e}")
+                return None  # Не повторяем при ошибке аутентификации
+
             except openai.APIConnectionError as e:
-                logger.error(f"Ошибка подключения к API (попытка {attempt + 1}): {e}")
+                logger.warning(f"Ошибка подключения на попытке {attempt + 1}: {e}")
                 if attempt < max_retries - 1:
                     wait_time = 2 ** attempt  # Экспоненциальная задержка
                     logger.info(f"Ожидание {wait_time} секунд перед повторной попыткой...")
                     time.sleep(wait_time)
                 else:
-                    raise
+                    logger.error("Исчерпаны все попытки подключения к API")
+                    return None
+
+            except openai.APITimeoutError as e:
+                logger.warning(f"Таймаут API на попытке {attempt + 1}: {e}")
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    logger.info(f"Ожидание {wait_time} секунд перед повторной попыткой...")
+                    time.sleep(wait_time)
+                else:
+                    logger.error("Исчерпаны все попытки из-за таймаута")
+                    return None
 
             except openai.RateLimitError as e:
-                logger.error(f"Превышен лимит запросов (попытка {attempt + 1}): {e}")
+                logger.warning(f"Превышен лимит запросов на попытке {attempt + 1}: {e}")
                 if attempt < max_retries - 1:
-                    wait_time = 10 + (2 ** attempt)  # Увеличенная задержка для rate limit
+                    wait_time = 5 * (attempt + 1)  # Увеличенная задержка для rate limit
                     logger.info(f"Ожидание {wait_time} секунд из-за лимита запросов...")
                     time.sleep(wait_time)
                 else:
-                    raise
-
-            except openai.APIError as e:
-                logger.error(f"Ошибка API OpenRouter (попытка {attempt + 1}): {e}")
-                if attempt < max_retries - 1:
-                    time.sleep(1)
-                else:
-                    raise
+                    logger.error("Исчерпаны все попытки из-за лимита запросов")
+                    return None
 
             except Exception as e:
-                logger.error(f"Неожиданная ошибка (попытка {attempt + 1}): {e}")
+                logger.error(f"Неожиданная ошибка на попытке {attempt + 1}: {e}")
                 if attempt < max_retries - 1:
                     time.sleep(1)
                 else:
-                    raise
+                    return None
+
+        return None
 
     def generate_response(self, query: str, session_id: str) -> Dict[str, Any]:
         """Генерация ответа с учетом контекста диалога"""
@@ -174,13 +173,22 @@ class AIAssistant:
             # Формирование промпта с учетом истории диалога
             user_prompt = self._build_user_prompt(query, context, conversation_history, is_sales_related)
 
-            # Генерация ответа с обработкой ошибок
+            # Подготовка сообщений для API
             messages = [
                 {"role": "system", "content": self.system_prompt},
                 {"role": "user", "content": user_prompt}
             ]
 
-            answer = self._make_api_request(messages)
+            # Генерация ответа с повторными попытками
+            answer = self.make_api_request_with_retry(messages)
+
+            if answer is None:
+                return {
+                    "response": "Извините, временно недоступна связь с сервисом ИИ. Проверьте настройки API ключа или попробуйте повторить запрос через несколько минут.",
+                    "sources": sources,
+                    "is_sales_related": is_sales_related,
+                    "relevant_docs_count": len(relevant_docs)
+                }
 
             # Сохранение в контекст
             self.context_manager.add_interaction(session_id, query, answer)
@@ -192,31 +200,12 @@ class AIAssistant:
                 "relevant_docs_count": len(relevant_docs)
             }
 
-        except openai.APIConnectionError as e:
-            logger.error(f"Ошибка подключения к OpenRouter API: {e}")
-            return {
-                "response": "Извините, временно недоступна связь с сервером ИИ. Пожалуйста, попробуйте позже или обратитесь к администратору.",
-                "sources": [],
-                "is_sales_related": True,
-                "error": "connection_error"
-            }
-
-        except openai.RateLimitError as e:
-            logger.error(f"Превышен лимит запросов к OpenRouter API: {e}")
-            return {
-                "response": "Извините, превышен лимит запросов к ИИ-сервису. Пожалуйста, попробуйте через несколько минут.",
-                "sources": [],
-                "is_sales_related": True,
-                "error": "rate_limit_error"
-            }
-
         except Exception as e:
             logger.error(f"Ошибка при генерации ответа: {e}")
             return {
-                "response": "Извините, произошла ошибка при обработке вашего запроса. Попробуйте еще раз или обратитесь к администратору.",
+                "response": "Извините, произошла ошибка при обработке вашего запроса. Попробуйте еще раз.",
                 "sources": [],
-                "is_sales_related": True,
-                "error": "general_error"
+                "is_sales_related": True
             }
 
     def _build_user_prompt(self, query: str, context: str, history: List[Dict], is_sales_related: bool) -> str:
@@ -246,6 +235,6 @@ class AIAssistant:
                 "ВАЖНО: Этот вопрос может не относиться к продажам. Ответь на него, но укажи это в ответе.")
 
         prompt_parts.append(
-            "Дай подробный ответ, используя информацию из документов. Приведи конкретные цитаты. НИКОГДА не упоминай название компании и продукта для соблюдения конфиденциальности, кроме компании LAI")
+            "Дай подробный ответ, используя информацию из документов. Приведи конкретные цитаты. НИКОГДА не упоминай название компании и продукта для соблюдения конфиденциальности")
 
         return "\n".join(prompt_parts)
