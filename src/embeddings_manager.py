@@ -1,6 +1,6 @@
 import logging
 from typing import List
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.schema import Document
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ class EmbeddingsManager:
     def __init__(self, model_name: str = "sentence-transformers/all-mpnet-base-v2", device: str = "cpu"):
         """
         Инициализация менеджера эмбеддингов
-        Используем HuggingFace embeddings, так как OpenRouter не поддерживает embedding модели[5][20]
+        Используем HuggingFace embeddings из langchain-community
         """
         self.model_name = model_name
         self.device = device

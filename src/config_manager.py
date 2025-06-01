@@ -19,7 +19,7 @@ class ConfigManager:
         """Загрузка конфигурации из файла"""
         try:
             if not self.config_path.exists():
-                logger.error(f"Файл конфигурации не найден: {self.config_path}")
+                logger.info(f"Файл конфигурации не найден: {self.config_path}, используем настройки по умолчанию")
                 return self._get_default_config()
 
             with open(self.config_path, 'r', encoding='utf-8') as f:
@@ -29,7 +29,7 @@ class ConfigManager:
             return config
 
         except Exception as e:
-            logger.error(f"Ошибка при загрузке конфигурации: {e}")
+            logger.warning(f"Ошибка при загрузке конфигурации: {e}, используем настройки по умолчанию")
             return self._get_default_config()
 
     def _get_default_config(self) -> Dict[str, Any]:
@@ -67,7 +67,7 @@ class ConfigManager:
         for section in required_sections:
             if section not in self.config:
                 logger.error(f"Отсутствует обязательная секция конфигурации: {section}")
-                raise ValueError(f"Некорректная конфигурация: отсутствует секция {section}")
+                self.config[section] = self._get_default_config()[section]
 
         # Проверка API ключа
         if not self.config["openrouter"]["api_key"]:
@@ -83,14 +83,26 @@ class ConfigManager:
             "data/processed",
             "data/sessions",
             self.config["vector_store"]["persist_directory"],
-            "logs"
         ]
 
         for directory in directories:
-            Path(directory).mkdir(parents=True, exist_ok=True)
+            try:
+                Path(directory).mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                logger.warning(f"Не удалось создать директорию {directory}: {e}")
+
+    @property
+    def config(self) -> Dict[str, Any]:
+        """Получение конфигурации"""
+        return self._config
+
+    @config.setter
+    def config(self, value: Dict[str, Any]) -> None:
+        """Установка конфигурации"""
+        self._config = value
 
     def get(self, key_path: str, default: Any = None) -> Any:
-        """Получение значения конфигурации по пути (например, 'openrouter.api_key')"""
+        """Получение значения конфигурации по пути"""
         keys = key_path.split('.')
         value = self.config
 
@@ -100,24 +112,3 @@ class ConfigManager:
             return value
         except (KeyError, TypeError):
             return default
-
-    def set(self, key_path: str, value: Any) -> None:
-        """Установка значения конфигурации"""
-        keys = key_path.split('.')
-        config = self.config
-
-        for key in keys[:-1]:
-            if key not in config:
-                config[key] = {}
-            config = config[key]
-
-        config[keys[-1]] = value
-
-    def save(self) -> None:
-        """Сохранение конфигурации в файл"""
-        try:
-            with open(self.config_path, 'w', encoding='utf-8') as f:
-                yaml.dump(self.config, f, allow_unicode=True, default_flow_style=False, indent=2)
-            logger.info(f"Конфигурация сохранена в {self.config_path}")
-        except Exception as e:
-            logger.error(f"Ошибка при сохранении конфигурации: {e}")
