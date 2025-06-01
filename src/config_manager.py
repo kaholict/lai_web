@@ -73,7 +73,7 @@ class ConfigManager:
                 "temperature": 0.7
             },
             "embeddings": {
-                "model_name": "sentence-transformers/all-mpnet-base-v2",
+                "model_name": "sentence-transformers/all-MiniLM-L6-v2",  # Более легкая модель
                 "device": "cpu"
             },
             "document_processing": {

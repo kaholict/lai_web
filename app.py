@@ -85,7 +85,7 @@ def setup_mode():
 
 
 def cloud_init():
-    """Автоматическая инициализация для Streamlit Cloud"""
+    """Автоматическая инициализация для Streamlit Cloud с улучшенной обработкой ошибок"""
     try:
         from src.config_manager import ConfigManager
         from src.document_processor import DocumentProcessor
@@ -96,10 +96,22 @@ def cloud_init():
         docs_path = Path("data/raw")
 
         # Проверка и создание векторного хранилища
-        embeddings_manager = EmbeddingsManager(
-            model_name=config.get("embeddings.model_name"),
-            device="cpu"
-        )
+        try:
+            embeddings_manager = EmbeddingsManager(
+                model_name=config.get("embeddings.model_name", "sentence-transformers/all-MiniLM-L6-v2"),
+                device="cpu"
+            )
+        except Exception as e:
+            logging.error(f"Ошибка инициализации эмбеддингов: {e}")
+            # Пытаемся с более простой моделью
+            try:
+                embeddings_manager = EmbeddingsManager(
+                    model_name="sentence-transformers/all-MiniLM-L6-v2",
+                    device="cpu"
+                )
+            except Exception as fallback_error:
+                logging.error(f"Критическая ошибка инициализации эмбеддингов: {fallback_error}")
+                return False
 
         vector_store = VectorStore(
             embeddings_manager=embeddings_manager,
@@ -159,10 +171,19 @@ def main():
 
     # Проверяем переменные окружения только если это не setup режим
     if not os.getenv("OPENROUTER_API_KEY") and 'setup' not in sys.argv:
-        st.error(
-            "❌ Не задан API ключ OpenRouter. Установите переменную окружения OPENROUTER_API_KEY или добавьте ключ в secrets.toml")
-        st.info("💡 Для локальной разработки создайте файл .streamlit/secrets.toml с вашим API ключом")
-        st.stop()
+        try:
+            # Проверяем Streamlit secrets
+            if hasattr(st, 'secrets') and st.secrets.get("OPENROUTER_API_KEY"):
+                pass  # API ключ найден в secrets
+            else:
+                st.error(
+                    "❌ Не задан API ключ OpenRouter. Установите переменную окружения OPENROUTER_API_KEY или добавьте ключ в secrets.toml")
+                st.info("💡 Для локальной разработки создайте файл .streamlit/secrets.toml с вашим API ключом")
+                st.stop()
+        except:
+            st.error(
+                "❌ Не задан API ключ OpenRouter. Установите переменную окружения OPENROUTER_API_KEY или добавьте ключ в secrets.toml")
+            st.stop()
 
     # Инициализация
     if cloud_init():
@@ -171,6 +192,7 @@ def main():
         web_main()
     else:
         st.error("❌ Ошибка инициализации системы")
+        st.info("🔧 Попробуйте перезапустить приложение")
 
 
 if __name__ == "__main__":
