@@ -73,7 +73,7 @@ class ConfigManager:
                 "temperature": 0.7
             },
             "embeddings": {
-                "model_name": "sentence-transformers/all-MiniLM-L6-v2",  # Более легкая модель
+                "model_name": "sentence-transformers/all-MiniLM-L6-v2",
                 "device": "cpu"
             },
             "document_processing": {
@@ -100,8 +100,12 @@ class ConfigManager:
                 self.config[section] = self._get_default_config()[section]
 
         # Проверка API ключа
-        if not self.config["openrouter"]["api_key"]:
-            logger.warning("API ключ OpenRouter не задан")
+        api_key = self.config["openrouter"]["api_key"]
+        if not api_key:
+            logger.error("API ключ OpenRouter не задан")
+            raise ValueError("API ключ OpenRouter не найден в конфигурации")
+        elif not api_key.startswith("sk-or-"):
+            logger.warning("API ключ может быть некорректным (не начинается с 'sk-or-')")
 
         # Создание директорий
         self._ensure_directories()
