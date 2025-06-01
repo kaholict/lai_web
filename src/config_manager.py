@@ -36,7 +36,7 @@ class ConfigManager:
         """Получение конфигурации по умолчанию"""
         return {
             "openrouter": {
-                "api_key": os.getenv("OPENROUTER_API_KEY", ""),
+                "api_key": "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",
                 "base_url": "https://openrouter.ai/api/v1",
                 "model": "deepseek/deepseek-r1-0528-qwen3-8b:free",
                 "temperature": 0.7
