@@ -66,3 +66,20 @@
 2025-06-01 22:02:24,007 - src.vector_store - INFO - Векторное хранилище успешно загружено
 2025-06-01 22:02:42,466 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
 2025-06-01 22:03:44,204 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-01 22:35:59,152 - src.config_manager - INFO - Конфигурация загружена из config.yaml
+2025-06-01 22:35:59,153 - root - INFO - Начинаем обработку документов
+2025-06-01 22:36:32,386 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-06-01 22:36:35,857 - src.embeddings_manager - INFO - Инициализирована модель эмбеддингов: sentence-transformers/all-mpnet-base-v2
+2025-06-01 22:36:35,858 - src.document_processor - WARNING - Не удалось извлечь текст из файла: data/raw/.DS_Store
+2025-06-01 22:36:35,869 - src.document_processor - INFO - Успешно извлечен текст из DOCX: data/raw/День второй.docx
+2025-06-01 22:36:36,031 - src.document_processor - INFO - Успешно извлечен текст из DOCX: data/raw/День третий.docx
+2025-06-01 22:36:36,042 - src.document_processor - INFO - Успешно извлечен текст из DOCX: data/raw/День первый.docx
+2025-06-01 22:36:36,490 - src.document_processor - INFO - Успешно извлечен текст из PDF: data/raw/Руководство по онбордингу сотрудника отдела продаж.pdf
+2025-06-01 22:36:36,490 - src.document_processor - INFO - Обработано 71 чанков из 4/5 файлов
+2025-06-01 22:36:36,490 - src.vector_store - INFO - Создание векторного хранилища из 71 документов
+2025-06-01 22:36:49,666 - faiss.loader - INFO - Loading faiss.
+2025-06-01 22:36:50,203 - faiss.loader - INFO - Successfully loaded faiss.
+2025-06-01 22:36:50,215 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-06-01 22:36:50,223 - src.vector_store - INFO - Векторное хранилище сохранено в data/vector_store
+2025-06-01 22:36:50,223 - src.vector_store - INFO - Векторное хранилище успешно создано и сохранено
+2025-06-01 22:36:50,223 - root - INFO - Успешно обработано 71 фрагментов документов
