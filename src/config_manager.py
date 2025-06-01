@@ -1,0 +1,123 @@
+import yaml
+import os
+import logging
+from pathlib import Path
+from typing import Dict, Any, Optional
+
+logger = logging.getLogger(__name__)
+
+
+class ConfigManager:
+    """Менеджер конфигурации с проверкой настроек"""
+
+    def __init__(self, config_path: str = "config.yaml"):
+        self.config_path = Path(config_path)
+        self.config = self._load_config()
+        self._validate_config()
+
+    def _load_config(self) -> Dict[str, Any]:
+        """Загрузка конфигурации из файла"""
+        try:
+            if not self.config_path.exists():
+                logger.error(f"Файл конфигурации не найден: {self.config_path}")
+                return self._get_default_config()
+
+            with open(self.config_path, 'r', encoding='utf-8') as f:
+                config = yaml.safe_load(f)
+
+            logger.info(f"Конфигурация загружена из {self.config_path}")
+            return config
+
+        except Exception as e:
+            logger.error(f"Ошибка при загрузке конфигурации: {e}")
+            return self._get_default_config()
+
+    def _get_default_config(self) -> Dict[str, Any]:
+        """Получение конфигурации по умолчанию"""
+        return {
+            "openrouter": {
+                "api_key": os.getenv("OPENROUTER_API_KEY", ""),
+                "base_url": "https://openrouter.ai/api/v1",
+                "model": "deepseek/deepseek-r1-0528-qwen3-8b:free",
+                "temperature": 0.7
+            },
+            "embeddings": {
+                "model_name": "sentence-transformers/all-mpnet-base-v2",
+                "device": "cpu"
+            },
+            "document_processing": {
+                "chunk_size": 1000,
+                "chunk_overlap": 200
+            },
+            "vector_store": {
+                "index_name": "sales_assistant",
+                "persist_directory": "./data/vector_store"
+            },
+            "assistant": {
+                "max_context_length": 10,
+                "session_timeout_hours": 24,
+                "max_response_tokens": 1000
+            }
+        }
+
+    def _validate_config(self) -> None:
+        """Валидация конфигурации"""
+        required_sections = ["openrouter", "embeddings", "vector_store"]
+
+        for section in required_sections:
+            if section not in self.config:
+                logger.error(f"Отсутствует обязательная секция конфигурации: {section}")
+                raise ValueError(f"Некорректная конфигурация: отсутствует секция {section}")
+
+        # Проверка API ключа
+        if not self.config["openrouter"]["api_key"]:
+            logger.warning("API ключ OpenRouter не задан")
+
+        # Создание директорий
+        self._ensure_directories()
+
+    def _ensure_directories(self) -> None:
+        """Создание необходимых директорий"""
+        directories = [
+            "data/raw",
+            "data/processed",
+            "data/sessions",
+            self.config["vector_store"]["persist_directory"],
+            "logs"
+        ]
+
+        for directory in directories:
+            Path(directory).mkdir(parents=True, exist_ok=True)
+
+    def get(self, key_path: str, default: Any = None) -> Any:
+        """Получение значения конфигурации по пути (например, 'openrouter.api_key')"""
+        keys = key_path.split('.')
+        value = self.config
+
+        try:
+            for key in keys:
+                value = value[key]
+            return value
+        except (KeyError, TypeError):
+            return default
+
+    def set(self, key_path: str, value: Any) -> None:
+        """Установка значения конфигурации"""
+        keys = key_path.split('.')
+        config = self.config
+
+        for key in keys[:-1]:
+            if key not in config:
+                config[key] = {}
+            config = config[key]
+
+        config[keys[-1]] = value
+
+    def save(self) -> None:
+        """Сохранение конфигурации в файл"""
+        try:
+            with open(self.config_path, 'w', encoding='utf-8') as f:
+                yaml.dump(self.config, f, allow_unicode=True, default_flow_style=False, indent=2)
+            logger.info(f"Конфигурация сохранена в {self.config_path}")
+        except Exception as e:
+            logger.error(f"Ошибка при сохранении конфигурации: {e}")

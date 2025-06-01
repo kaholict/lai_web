@@ -1,0 +1,68 @@
+2025-06-01 21:43:34,957 - src.config_manager - INFO - Конфигурация загружена из config.yaml
+2025-06-01 21:43:34,958 - root - INFO - Начинаем обработку документов
+2025-06-01 21:44:01,555 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-06-01 21:44:04,575 - src.embeddings_manager - INFO - Инициализирована модель эмбеддингов: sentence-transformers/all-mpnet-base-v2
+2025-06-01 21:44:04,576 - src.document_processor - WARNING - Не удалось извлечь текст из файла: data/raw/.DS_Store
+2025-06-01 21:44:04,586 - src.document_processor - INFO - Успешно извлечен текст из DOCX: data/raw/День второй.docx
+2025-06-01 21:44:04,602 - src.document_processor - INFO - Успешно извлечен текст из DOCX: data/raw/День третий.docx
+2025-06-01 21:44:04,616 - src.document_processor - INFO - Успешно извлечен текст из DOCX: data/raw/День первый.docx
+2025-06-01 21:44:05,126 - src.document_processor - INFO - Успешно извлечен текст из PDF: data/raw/Руководство по онбордингу сотрудника отдела продаж.pdf
+2025-06-01 21:44:05,127 - src.document_processor - INFO - Обработано 71 чанков из 4/5 файлов
+2025-06-01 21:44:05,127 - src.vector_store - INFO - Создание векторного хранилища из 71 документов
+2025-06-01 21:44:14,874 - faiss.loader - INFO - Loading faiss.
+2025-06-01 21:44:15,463 - faiss.loader - INFO - Successfully loaded faiss.
+2025-06-01 21:44:15,468 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-06-01 21:44:15,474 - src.vector_store - INFO - Векторное хранилище сохранено в data/vector_store
+2025-06-01 21:44:15,474 - src.vector_store - INFO - Векторное хранилище успешно создано и сохранено
+2025-06-01 21:44:15,474 - root - INFO - Успешно обработано 71 фрагментов документов
+2025-06-01 21:44:39,223 - src.config_manager - INFO - Конфигурация загружена из config.yaml
+2025-06-01 21:44:39,223 - root - INFO - Запуск веб-интерфейса
+2025-06-01 21:44:49,549 - src.config_manager - INFO - Конфигурация загружена из config.yaml
+2025-06-01 21:44:49,549 - root - INFO - Запуск веб-интерфейса
+2025-06-01 21:45:10,341 - src.config_manager - INFO - Конфигурация загружена из config.yaml
+2025-06-01 21:45:10,341 - root - INFO - Запуск веб-интерфейса
+2025-06-01 21:45:14,410 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-06-01 21:45:17,618 - src.embeddings_manager - INFO - Инициализирована модель эмбеддингов: sentence-transformers/all-mpnet-base-v2
+2025-06-01 21:45:17,629 - faiss.loader - INFO - Loading faiss.
+2025-06-01 21:45:17,684 - faiss.loader - INFO - Successfully loaded faiss.
+2025-06-01 21:45:17,687 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-06-01 21:45:17,689 - src.vector_store - INFO - Векторное хранилище успешно загружено
+2025-06-01 21:46:03,991 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 402 Payment Required"
+2025-06-01 21:46:03,997 - src.ai_assistant - ERROR - Ошибка при генерации ответа: Error code: 402 - {'error': {'message': 'Insufficient credits. Add more using https://openrouter.ai/settings/credits', 'code': 402}}
+2025-06-01 21:50:13,460 - src.config_manager - INFO - Конфигурация загружена из config.yaml
+2025-06-01 21:50:13,460 - root - INFO - Запуск веб-интерфейса
+2025-06-01 21:50:17,715 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-06-01 21:50:21,028 - src.embeddings_manager - INFO - Инициализирована модель эмбеддингов: sentence-transformers/all-mpnet-base-v2
+2025-06-01 21:50:21,033 - faiss.loader - INFO - Loading faiss.
+2025-06-01 21:50:21,094 - faiss.loader - INFO - Successfully loaded faiss.
+2025-06-01 21:50:21,098 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-06-01 21:50:21,102 - src.vector_store - INFO - Векторное хранилище успешно загружено
+2025-06-01 21:50:30,865 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-01 21:57:40,291 - src.config_manager - INFO - Конфигурация загружена из config.yaml
+2025-06-01 21:57:40,291 - root - INFO - Запуск веб-интерфейса
+2025-06-01 21:57:44,545 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-06-01 21:57:50,855 - src.embeddings_manager - INFO - Инициализирована модель эмбеддингов: sentence-transformers/all-mpnet-base-v2
+2025-06-01 21:57:50,864 - faiss.loader - INFO - Loading faiss.
+2025-06-01 21:57:50,926 - faiss.loader - INFO - Successfully loaded faiss.
+2025-06-01 21:57:50,930 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-06-01 21:57:50,933 - src.vector_store - INFO - Векторное хранилище успешно загружено
+2025-06-01 21:58:44,858 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-01 22:00:31,706 - src.config_manager - INFO - Конфигурация загружена из config.yaml
+2025-06-01 22:00:31,706 - root - INFO - Запуск веб-интерфейса
+2025-06-01 22:00:36,367 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-06-01 22:00:39,381 - src.embeddings_manager - INFO - Инициализирована модель эмбеддингов: sentence-transformers/all-mpnet-base-v2
+2025-06-01 22:00:39,386 - faiss.loader - INFO - Loading faiss.
+2025-06-01 22:00:39,441 - faiss.loader - INFO - Successfully loaded faiss.
+2025-06-01 22:00:39,446 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-06-01 22:00:39,449 - src.vector_store - INFO - Векторное хранилище успешно загружено
+2025-06-01 22:01:23,107 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-01 22:02:15,688 - src.config_manager - INFO - Конфигурация загружена из config.yaml
+2025-06-01 22:02:15,688 - root - INFO - Запуск веб-интерфейса
+2025-06-01 22:02:20,020 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: sentence-transformers/all-mpnet-base-v2
+2025-06-01 22:02:23,943 - src.embeddings_manager - INFO - Инициализирована модель эмбеддингов: sentence-transformers/all-mpnet-base-v2
+2025-06-01 22:02:23,947 - faiss.loader - INFO - Loading faiss.
+2025-06-01 22:02:23,999 - faiss.loader - INFO - Successfully loaded faiss.
+2025-06-01 22:02:24,003 - faiss - INFO - Failed to load GPU Faiss: name 'GpuIndexIVFFlat' is not defined. Will not load constructor refs for GPU indexes. This is only an error if you're trying to use GPU Faiss.
+2025-06-01 22:02:24,007 - src.vector_store - INFO - Векторное хранилище успешно загружено
+2025-06-01 22:02:42,466 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-01 22:03:44,204 - httpx - INFO - HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
