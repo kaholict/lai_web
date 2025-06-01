@@ -1,6 +1,6 @@
 # API Configuration для OpenRouter
 openrouter:
-  api_key: ""  # Будет загружен из secrets.toml или переменных окружения
+  api_key: "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"
   base_url: "https://openrouter.ai/api/v1"
   model: "deepseek/deepseek-r1-0528:free"
   temperature: 0.7
