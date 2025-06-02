@@ -75,7 +75,7 @@ class ConfigManager:
             "openrouter": {
                 "api_key": "",  # Будет загружен из secrets или переменных окружения
                 "base_url": "https://openrouter.ai/api/v1",
-                "model": "deepseek/deepseek-r1-0528:free",
+                "model": "mistralai/mistral-small-3.1-24b-instruct:free",
                 "temperature": 0.7
             },
             "embeddings": {
