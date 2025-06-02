@@ -1,4 +1,5 @@
 import logging
+import streamlit as st
 import json
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
@@ -22,6 +23,11 @@ class AIAssistant:
         try:
             # Проверяем наличие API ключа
             api_key = config["openrouter"]["api_key"]
+            if not api_key:
+                api_key = st.secrets.get("OPENROUTER_API_KEY")
+                if api_key:
+                    logger.info("API ключ загружен из Streamlit secrets")
+
             if not api_key:
                 raise ValueError("API ключ OpenRouter не найден в конфигурации")
 
