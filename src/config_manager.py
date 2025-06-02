@@ -75,7 +75,7 @@ class ConfigManager:
             "openrouter": {
                 "api_key": "",  # Будет загружен из secrets или переменных окружения
                 "base_url": "https://openrouter.ai/api/v1",
-                "model": "meta-llama/llama-3.3-70b-instruct:free",
+                "model": "deepseek/deepseek-r1-0528:free",
                 "temperature": 0.7
             },
             "embeddings": {
